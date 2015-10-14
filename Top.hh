@@ -66,6 +66,10 @@ private:
             const mat& B,
             val C,
             int maxIter);
+    /*
+     * return the symmetrically normalized G 
+     */
+    sp_mat normalized_graph(const sp_mat& G);
 };
 
 #endif

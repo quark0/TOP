@@ -40,5 +40,5 @@ if __name__ == '__main__':
                 correct = correct + 1
                 sum_precision = sum_precision + correct/(pos+1)
         aps.append(sum_precision/len(ltruth))
-        print "Q:", q, '\tAP:', sum_precision
+        print "Q:", q, '\tAP:', sum_precision/len(ltruth)
     print "MAP =", sum(aps)/len(aps)

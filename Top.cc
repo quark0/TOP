@@ -90,11 +90,17 @@ mat Top::matrix_pcg(
     return F;
 }
 
+sp_mat Top::normalized_graph(const sp_mat& G) {
+    mat inv_degree = (G*mat::Ones(G.rows(),1)).cwiseSqrt().cwiseInverse();
+    return inv_degree.asDiagonal()*G*inv_degree.asDiagonal();
+}
+
 /*XXX: modify as the alternating newton's method*/
-bool Top::train(const Entity& e1, const Entity& e2, const Relation& r)
-{
-    RedSVD::RedSVD<sp_mat> svd1(e1.G,this->d);
-    RedSVD::RedSVD<sp_mat> svd2(e2.G,this->d);
+bool Top::train(const Entity& e1, const Entity& e2, const Relation& r) {
+
+    RedSVD::RedSVD<sp_mat> svd1(normalized_graph(e1.G),this->d);
+    RedSVD::RedSVD<sp_mat> svd2(normalized_graph(e2.G),this->d);
+
     mat U = svd1.matrixU(); 
     mat V = svd2.matrixU();
 
