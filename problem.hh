@@ -15,8 +15,8 @@ typedef Eigen::Triplet<val> TripletF;
 
 class Entity {
 public:
-    int n;                                // #training examples
-    sp_mat G;                             // KNN graph induced from X
+    int n;                                // number of training examples
+    sp_mat G;                             // intrinsic graph structure among entities
     std::unordered_map<int, std::string> id_of;     // given the instance index, return id
     std::unordered_map<std::string, int> index_of;  // given the instance id, return index
     /*

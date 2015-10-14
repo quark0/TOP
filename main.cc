@@ -1,3 +1,7 @@
+/*
+ *Transduction over the Product Graphs
+ *@author Hanxiao Liu, Carnegie Mellon University
+ */
 using namespace std;
 
 #include <assert.h>

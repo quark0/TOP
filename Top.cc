@@ -19,7 +19,8 @@ val Top::objective(
         d = F(i,j) - it->value();
         ell += d*d;
     }
-    return C*ell + 0.5*F.cwiseProduct(U*Sigma.cwiseProduct(U.transpose()*F*V)*V.transpose()).sum(); 
+    return C*ell +
+        0.5*F.cwiseProduct(U*Sigma.cwiseProduct(U.transpose()*F*V)*V.transpose()).sum(); 
 }
 
 mat Top::gradient(
@@ -37,7 +38,8 @@ mat Top::gradient(
         j = it->col();
         nabla_ell(i,j) += F(i,j) - it->value();
     }
-    return 2*C*nabla_ell + U*Sigma.cwiseProduct(U.transpose()*F*V)*V.transpose();
+    return 2*C*nabla_ell +
+        U*Sigma.cwiseProduct(U.transpose()*F*V)*V.transpose();
 }
 
 mat Top::hessian_map(
@@ -56,7 +58,8 @@ mat Top::hessian_map(
         gamma(i,j) = F(i,j);
    }
     // 2C*I.*F + ...
-    return 2*C*gamma + U*Sigma.cwiseProduct(U.transpose()*F*V)*V.transpose();
+    return 2*C*gamma +
+        U*Sigma.cwiseProduct(U.transpose()*F*V)*V.transpose();
 }
 
 mat Top::matrix_pcg(
@@ -110,7 +113,8 @@ bool Top::train(const Entity& e1, const Entity& e2, const Relation& r) {
      */
 
     //Diffusion Kernel over the Cartesian Product Graph
-    mat Kappa = (svd1.singularValues().replicate(1,V.cols())+svd2.singularValues().replicate(1,U.cols()).transpose()).array().exp();
+    mat Kappa = (svd1.singularValues().replicate(1,V.cols()) +
+            svd2.singularValues().replicate(1,U.cols()).transpose()).array().exp();
 
     mat Sigma = Kappa.cwiseInverse();
     F = mat::Zero(e1.n,e2.n);
@@ -130,7 +134,7 @@ bool Top::train(const Entity& e1, const Entity& e2, const Relation& r) {
         t = 1;
         while (objective(F - t*delta_F, r, U, V, Sigma, C) >
           obj_old - alpha*t*nabla_F.cwiseProduct(delta_F).sum())
-            t = beta*t;
+            t *= beta;
         F -= t*delta_F;
         /*info disp and workflow control*/
         obj_new = objective(F, r, U, V, Sigma, C);
