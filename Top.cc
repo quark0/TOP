@@ -1,13 +1,7 @@
 #include "Top.hh"
 
-Top::Top(int d, val C, val tol, val alpha, val beta, int pcgIter) {
-    this->d = d;
-    this->C = C;
-    this->tol = tol;
-    this->pcgIter = pcgIter;
-    this->alpha = alpha;
-    this->beta = beta;
-}
+Top::Top(int _d, val _C, val _tol, val _alpha, val _beta, int _pcgIter)
+    : d(_d), C(_C), tol(_tol), alpha(_alpha), beta(_beta), pcgIter(_pcgIter) {};
 
 val Top::objective(
         const mat& F,

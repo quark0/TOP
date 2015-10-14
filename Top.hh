@@ -8,11 +8,11 @@
 class Top
 {
     int d;
-    int pcgIter;
     val C;
     val tol;
     val alpha;
     val beta;
+    int pcgIter;
     mat F;
 public:
     Top(int d, val C, val tol, val alpha, val beta, int pcgIter);

@@ -5,30 +5,44 @@ using namespace std;
 #include "SimpleIni.h"
 
 int main(int argc, char *argv[]) {
-    /*load the configuration file*/
+    if (argc < 2) {
+        std::cerr << "usage: " << argv[0] << " configuration.ini" << std::endl;
+        exit(1);
+    }
+    /*load the configuration file *.ini*/
     CSimpleIniA ini(true, true, true);
-    assert(ini.LoadFile("cfg.ini") >= 0);
+    assert(ini.LoadFile(argv[1]) >= 0);
 
-    Entity e1(ini.GetValue("io", "entity1", NULL));
-    Entity e2(ini.GetValue("io", "entity1", NULL));
+    /*load graph G on the left*/
+    Entity g(ini.GetValue("IO", "G", NULL));
+    printf("Nodes in Entity 1:\t%d\n", g.n);
 
-    printf("Nodes in Entity 1:\t%d\n", e1.n);
-    printf("Nodes in Entity 2:\t%d\n", e2.n);
+    /*load graph H on the right*/
+    Entity h(ini.GetValue("IO", "H", NULL));
+    printf("Nodes in Entity 2:\t%d\n", h.n);
 
-    Relation r_trn(ini.GetValue("io", "trainLinks", NULL), e1, e2);
-    Relation r_tes(ini.GetValue("io", "testLinks", NULL), e1, e2);
+    /*load observed cross-graph links for training*/
+    Relation trn(ini.GetValue("IO", "linksTrain", NULL), g, h);
+    printf("Edges for Training:\t%zd\n", trn.edges.size());
 
-    printf("Edges for Training:\t%zd\n", r_trn.edges.size());
-    printf("Edges for Testing:\t%zd\n", r_tes.edges.size());
+    /*load hold-out cross-graph links for testing*/
+    Relation tes(ini.GetValue("IO", "linksTest", NULL), g, h);
+    printf("Edges for Testing:\t%zd\n", tes.edges.size());
 
-    Top top(ini.GetLongValue("hyper", "d", 5),
-            ini.GetDoubleValue("hyper", "C", 1e-3),
-            ini.GetDoubleValue("opt", "tol", 1e-3),
-            ini.GetDoubleValue("opt", "alpha", 0.5),
-            ini.GetDoubleValue("opt", "beta", 0.5),
-            ini.GetLongValue("opt", "pcgIter", 15));
+    /*read algorithmic settings from file*/
+    int d = ini.GetLongValue("Model", "d", 5);
+    double C = ini.GetDoubleValue("Model", "C", 1e-3);
+    int pcgIter = ini.GetLongValue("Optimization", "pcgIter", 15);
+    double tol = ini.GetDoubleValue("Optimization", "tol", 1e-3);
+    double alpha = ini.GetDoubleValue("Optimization", "alpha", 0.5);
+    double beta = ini.GetDoubleValue("Optimization", "beta", 0.5);            
+
+    /*initialize the algorithm*/
+    Top top(d, C, tol, alpha, beta, pcgIter);
+
     /*training*/
-    assert(top.train(e1, e2, r_trn));
-    /*prediction*/
-    assert(top.predict(e1, e2, r_tes, ini.GetValue("io", "output", "output.log")));
+    assert(top.train(g, h, trn));
+
+    /*dump the predictions to file*/
+    assert(top.predict(g, h, tes, ini.GetValue("IO", "prediction", "prediction.txt")));
 }
