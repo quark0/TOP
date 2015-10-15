@@ -19,8 +19,9 @@ val Top::objective(
         d = F(i,j) - it->value();
         ell += d*d;
     }
+    /*Presence of the last term is due to the trick for "Cartesian+Diffusion" that we first substract "1" from Sigma*/
     return C*ell +
-        0.5*F.cwiseProduct(U*Sigma.cwiseProduct(U.transpose()*F*V)*V.transpose()).sum(); 
+        0.5*F.cwiseProduct(U*Sigma.cwiseProduct(U.transpose()*F*V)*V.transpose()).sum() + 0.5*F.cwiseProduct(F).sum(); 
 }
 
 mat Top::gradient(
@@ -39,7 +40,7 @@ mat Top::gradient(
         nabla_ell(i,j) += F(i,j) - it->value();
     }
     return 2*C*nabla_ell +
-        U*Sigma.cwiseProduct(U.transpose()*F*V)*V.transpose();
+        U*Sigma.cwiseProduct(U.transpose()*F*V)*V.transpose() + F;
 }
 
 mat Top::hessian_map(
@@ -59,7 +60,7 @@ mat Top::hessian_map(
    }
     // 2C*I.*F + ...
     return 2*C*gamma +
-        U*Sigma.cwiseProduct(U.transpose()*F*V)*V.transpose();
+        U*Sigma.cwiseProduct(U.transpose()*F*V)*V.transpose() + F;
 }
 
 mat Top::matrix_pcg(
@@ -107,18 +108,24 @@ bool Top::train(const Entity& e1, const Entity& e2, const Relation& r) {
     mat U = svd1.matrixU(); 
     mat V = svd2.matrixU();
 
-    //Tensor Product Graph
+    /*Tensor Product Graph*/
     /*
      *mat Kappa = svd1.singularValues()*svd2.singularValues().transpose();
      */
 
-    //Diffusion Kernel over the Cartesian Product Graph
+    /*Diffusion Kernel over the Cartesian Product Graph*/
     mat Kappa = (svd1.singularValues().replicate(1,V.cols()) +
             svd2.singularValues().replicate(1,U.cols()).transpose()).array().exp();
 
     mat Sigma = Kappa.cwiseInverse();
-    F = mat::Zero(e1.n,e2.n);
+    /*
+     *XXX Since exp(0) = 1, we
+     * 1. Set the exponentiated zero entries (the "ones") in Sigma to zero
+     * 2. Append a regularization term to compensate in the objective function
+     */
+    Sigma.array() -= 1;
 
+    F = mat::Zero(e1.n,e2.n);
     std::clock_t start;
     int i = 0;
     val t;
