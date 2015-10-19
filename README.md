@@ -24,9 +24,9 @@ G could be the social network among the users
 and H could be the graph of movie-movie similarity induced from the movie genres.
 In this case, cross-graph links may correspond to user-movie ratings.
   
-By default, the program reads configurations specified in `cfg.ini`. The configuration file should be self-explanatory. Here is a sample pipeline for execution and evaluation:
+The program reads configurations specified in `*.ini`. The provided configuration file should be self-explanatory. Here is a sample pipeline for execution and evaluation:
 ```
-make && ./train && python eval.py data/cmu/link.test.txt link.predict.txt
+make && ./train cfg.ini && python eval.py data/cmu/link.test.txt predict.txt
 ```
 
 ## Author
